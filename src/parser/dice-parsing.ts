@@ -99,11 +99,12 @@ if (!isNaN(Number(number))) {
         {
             regex: /(\d+)\s\((\d+d\d+(?:\s*[+\-]\s*\d+)?)\)/.source,
             parser: `let [, base, dice] = matches;
-let text;
+let text, combined;
 if (!isNaN(Number(base)) && dice) {
     text = dice;
+    combined = \`\${base} (\${dice})\`;
 }
-return { text, original: dice ?? original };`,
+return { text, original: dice ?? original, combined };`,
             id: nanoid(),
             desc: "4 (1d6 + 1)"
         },

@@ -30,7 +30,14 @@
     let plugin = getContext<StatBlockPlugin>("plugin");
     let layout = getContext<Layout>("layout");
 
-    let split: Array<{ text: string; original?: string } | string> = [property];
+    /** Authored text for this property (e.g. "11 (2d6 + 4)"), kept so combine
+     * mode can show it next to the rolled widget even when a dice path replaces
+     * the whole property. */
+    const authored = stringify(property);
+
+    let split: Array<
+        { text: string; original?: string; combined?: string } | string
+    > = [property];
     if (canDice && parseDice) {
         if (
             item.diceProperty &&
@@ -39,7 +46,7 @@
         ) {
             split = [{ text: monster[item.diceProperty] as string }];
         } else {
-            const parsed = parseForDice(layout, stringify(property), monster);
+            const parsed = parseForDice(layout, authored, monster);
             if (Array.isArray(parsed)) {
                 split = parsed;
             } else {
@@ -69,14 +76,33 @@
         }
     }
 
-    property = "";
+    const combineDice = plugin.settings.combineDiceDisplay;
 
+    /** When a dice path replaced the whole property with a single roll (e.g. the
+     * default HP callback returning `[{ text: hit_dice }]`), keep the authored
+     * text as the combine-mode prefix so formula + average stay visible. */
+    if (
+        combineDice &&
+        split.length === 1 &&
+        typeof split[0] === "object" &&
+        !split[0].combined &&
+        !split[0].original
+    ) {
+        split[0].combined = authored;
+    }
+
+    property = "";
     for (const dice of split) {
         if (canDice && typeof dice == "object") {
             let diceString;
             let diceText = plugin.getRollerString(dice.text);
-            if (dice.original) {
-                diceString = `${dice.original} (\`dice: ${diceText}\`)`;
+            /** When combining, show the authored formula + average (`combined`,
+             * falling back to `original`) next to the live-rolled widget. */
+            const prefix = combineDice
+                ? dice.combined ?? dice.original
+                : dice.original;
+            if (prefix) {
+                diceString = `${prefix} (\`dice: ${diceText}\`)`;
             } else {
                 diceString = `\`dice: ${diceText}\``;
             }

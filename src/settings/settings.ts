@@ -14,14 +14,12 @@ import LayoutEditor from "./layout/LayoutEditor.svelte";
 
 import fastCopy from "fast-copy";
 
-import { ExpectedValue } from "@javalent/dice-roller";
 import { FolderInputSuggest } from "@javalent/utilities";
 import type { Monster } from "index";
 import Importer from "src/importers/importer";
 import { DefaultLayouts } from "src/layouts";
 import { Layout5e } from "src/layouts/basic 5e/basic5e";
 import type { DefaultLayout, Layout } from "src/layouts/layout.types";
-import { DICE_ROLLER_SOURCE } from "src/main";
 import FantasyStatblockModal from "src/modal/modal";
 import { nanoid } from "src/util/util";
 import { Watcher } from "src/watcher/watcher";
@@ -184,17 +182,38 @@ export default class StatblockSettingTab extends PluginSettingTab {
                     .onChange(async (v) => {
                         this.plugin.settings.renderDice = v;
                         if (this.plugin.diceRollerInstalled) {
-                            window.DiceRoller.registerSource(
-                                DICE_ROLLER_SOURCE,
-                                {
-                                    showDice: true,
-                                    shouldRender:
-                                        this.plugin.settings.renderDice,
-                                    showFormula: false,
-                                    showParens: false,
-                                    expectedValue: ExpectedValue.Average
-                                }
-                            );
+                            this.plugin.registerDiceSource();
+                        }
+                        await this.plugin.saveSettings();
+                    })
+            );
+        new Setting(container)
+            .setName("Show Roll, Formula, and Average")
+            .setDesc(
+                createFragment((e) => {
+                    if (this.plugin.diceRollerInstalled) {
+                        e.createSpan({
+                            text: "Show the authored formula and average alongside a live-rolled result, e.g. "
+                        });
+                        e.createEl("code", { text: "4 (1d6 + 1) (5)" });
+                        e.createSpan({
+                            text: ". Requires Integrate Dice Roller."
+                        });
+                    } else {
+                        e.createSpan({
+                            text: "This setting is only usable with the Dice Roller plugin enabled."
+                        });
+                    }
+                })
+            )
+            .setDisabled(!this.plugin.diceRollerInstalled)
+            .addToggle((t) =>
+                t
+                    .setValue(this.plugin.settings.combineDiceDisplay)
+                    .onChange(async (v) => {
+                        this.plugin.settings.combineDiceDisplay = v;
+                        if (this.plugin.diceRollerInstalled) {
+                            this.plugin.registerDiceSource();
                         }
                         await this.plugin.saveSettings();
                     })
