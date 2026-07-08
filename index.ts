@@ -144,6 +144,7 @@ export interface StatblockData {
     default: string;
     useDice: boolean;
     renderDice: boolean;
+    combineDiceDisplay: boolean;
     export: boolean;
     showAdvanced: boolean;
     version: {

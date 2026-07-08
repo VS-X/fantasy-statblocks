@@ -261,4 +261,6 @@ export type DiceParsing = {
 
 export type DiceParser = () => ParsedDice[];
 
-export type ParsedDice = string | { text: string; original: string };
+export type ParsedDice =
+    | string
+    | { text: string; original: string; combined?: string };

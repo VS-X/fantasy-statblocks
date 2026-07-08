@@ -41,6 +41,7 @@ const DEFAULT_DATA: StatblockData = {
     default: Layout5e.name,
     useDice: true,
     renderDice: false,
+    combineDiceDisplay: false,
     export: true,
     showAdvanced: false,
     version: {
@@ -73,6 +74,23 @@ export default class StatBlockPlugin extends Plugin {
     getRollerString(str: string) {
         if (!this.canUseDiceRoller) return str;
         return window.DiceRoller.getRollerString(str, DICE_ROLLER_SOURCE);
+    }
+    getDiceRollerOptions() {
+        return {
+            showDice: true,
+            shouldRender: this.settings.renderDice,
+            showFormula: false,
+            showParens: false,
+            expectedValue: this.settings.combineDiceDisplay
+                ? ExpectedValue.Roll
+                : ExpectedValue.Average
+        };
+    }
+    registerDiceSource() {
+        window.DiceRoller.registerSource(
+            DICE_ROLLER_SOURCE,
+            this.getDiceRollerOptions()
+        );
     }
     get diceRollerInstalled() {
         if (window.DiceRoller != null) {
@@ -216,25 +234,11 @@ export default class StatBlockPlugin extends Plugin {
             (leaf: WorkspaceLeaf) => new CreatureView(leaf, this)
         );
         if (this.canUseDiceRoller) {
-            window.DiceRoller.registerSource(DICE_ROLLER_SOURCE, {
-                showDice: true,
-                shouldRender: this.settings.renderDice,
-                showFormula: false,
-                showParens: false,
-                expectedValue: ExpectedValue.Average,
-                text: null
-            });
+            this.registerDiceSource();
         }
         this.registerEvent(
             this.app.workspace.on("dice-roller:loaded", () => {
-                window.DiceRoller.registerSource(DICE_ROLLER_SOURCE, {
-                    showDice: true,
-                    shouldRender: this.settings.renderDice,
-                    showFormula: false,
-                    showParens: false,
-                    expectedValue: ExpectedValue.Average,
-                    text: null
-                });
+                this.registerDiceSource();
             })
         );
     }
@@ -456,9 +460,9 @@ export default class StatBlockPlugin extends Plugin {
             pre.setText(`\`\`\`statblock
 There was an error rendering the statblock:
 ${e.stack
-    .split("\n")
-    .filter((line: string) => !/^at/.test(line?.trim()))
-    .join("\n")}
+                    .split("\n")
+                    .filter((line: string) => !/^at/.test(line?.trim()))
+                    .join("\n")}
 \`\`\``);
         }
     }
