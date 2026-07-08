@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.11.0](https://github.com/VS-X/fantasy-statblocks/compare/4.10.3...4.11.0) (2026-07-08)
+
+
+### Features
+
+* option to display both the formula and rolled number ([2028c2d](https://github.com/VS-X/fantasy-statblocks/commit/2028c2da37d48edb010ad9ed01bcf47bdfebb8be))
+
 ## [4.10.3](https://github.com/javalent/fantasy-statblocks/compare/4.10.2...4.10.3) (2026-01-21)
 
 
